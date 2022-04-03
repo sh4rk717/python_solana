@@ -68,9 +68,9 @@ def leader_slots(identity):
 ####################################################################
 
 '''MAIN PART (sazhiv)'''
-print('Check balance\t- 1')
-print('Leaderslots\t\t- 2')
-print('Epoch info\t\t- 3')
+print('Check balance - 1')
+print('Leaderslots   - 2')
+print('Epoch info    - 3')
 
 identity = ['A1enabzLW77R2VVg67CLv3kNJ5FWVnAmC6pKcZwCmkXB', 'sh4rkGLyKwi8q1n8bwYkDiUC2n1cs6tbWSTGogd45d6']
 vote = ['voteAipENjPHajaL8264qeNHvg28aHBqakojS1AoXsz', 'voteDNom5RVrC14QfYhjdj5AS2xD3cZ21QMoWqbiroe']
