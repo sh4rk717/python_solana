@@ -4,6 +4,15 @@ from datetime import datetime
 from datetime import timedelta
 
 
+def get_vote(identity_list):
+    vote_list = []
+    for key in range(len(identity_list)):
+        vote = subprocess.check_output('solana validators | grep ' + identity_list[key] + ' | awk \'{print $3}\'',
+                                       shell=True, universal_newlines=True)
+        vote_list.append(vote[:-1])
+    return vote_list
+
+
 def end_of_epoch():
     full_info = subprocess.check_output('solana epoch-info', universal_newlines=True, shell=True)
     parent = re.findall(r"\((.*?)\)", full_info)  # list of texts in parentheses
@@ -42,38 +51,36 @@ def check_balance(identity_list, vote_list):
         print('Vote (' + vote_list[key][:5] + '):\t\t' + bal2)
 
 
-def leader_slots(identity):
-    for key in range(len(identity)):
-        validator_info = subprocess.check_output('solana validators | grep ' + identity[key],
+def leader_slots(identity_list):
+    for key in range(len(identity_list)):
+        validator_info = subprocess.check_output('solana validators | grep ' + identity_list[key],
                                                  universal_newlines=True, shell=True)
-        total = subprocess.check_output('solana leader-schedule | grep ' + identity[key] + ' | wc -l',
+        total = subprocess.check_output('solana leader-schedule | grep ' + identity_list[key] + ' | wc -l',
                                         universal_newlines=True, shell=True)
         try:
-            leader_slots_info = subprocess.check_output('solana block-production | grep ' + 'identity[key]',
+            leader_slots_info = subprocess.check_output('solana block-production | grep ' + identity_list[key],
                                                         universal_newlines=True, shell=True)
         except subprocess.CalledProcessError as e:
-            leader_slots_info = '0'*81
+            leader_slots_info = '0' * 81
         credits = int(validator_info[143:150])
         blocks_produced = int(leader_slots_info[75:82])
         commission = credits * 5e-6 - blocks_produced * 375e-5
-        print(identity[key][:5])
+        print(identity_list[key][:5])
         print(
             'Total leader slots   Completed Leader Slots  Blocks Produced    Skipped Slots  Skipped Slot Percentage   Commission')
         if leader_slots_info[0] != '0':
-            print(total[:-1].rjust(18) + ' ' * 12 + leader_slots_info[50:-1] + '◎{0:.3f}'.format(commission).rjust(13) + '\n')
+            print(total[:-1].rjust(18) + ' ' * 12 + leader_slots_info[50:-1] + '◎{0:.3f}'.format(commission).rjust(
+                13) + '\n')
         else:
             print(total[:-1].rjust(18) + ' ' * 84 + '◎{0:.3f}'.format(commission).rjust(13) + '\n')
 
 
-####################################################################
-
-'''MAIN PART (sazhiv)'''
 print('Check balance - 1')
 print('Leaderslots   - 2')
 print('Epoch info    - 3')
 
 identity = ['A1enabzLW77R2VVg67CLv3kNJ5FWVnAmC6pKcZwCmkXB', 'sh4rkGLyKwi8q1n8bwYkDiUC2n1cs6tbWSTGogd45d6']
-vote = ['voteAipENjPHajaL8264qeNHvg28aHBqakojS1AoXsz', 'voteDNom5RVrC14QfYhjdj5AS2xD3cZ21QMoWqbiroe']
+vote = get_vote(identity)
 
 while True:
     cmd = input('Choose option: ')
