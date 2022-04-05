@@ -6,7 +6,7 @@ from datetime import timedelta
 
 def menu():
     print('Check balance - 1')
-    print('Leaderslots   - 2')
+    print('Leader Slots  - 2')
     print('Epoch info    - 3')
     print('Vote info     - 4')
     print('Validators    - 5')
@@ -15,9 +15,9 @@ def menu():
 def get_vote(identity_list):
     vote_list = []
     for i in range(len(identity_list)):
-        vote = subprocess.check_output('solana validators | grep ' + identity_list[i] + ' | awk \'{print $3}\'',
-                                       shell=True, universal_newlines=True)
-        vote_list.append(vote[:-1])
+        vt = subprocess.check_output('solana validators | grep ' + identity_list[i] + ' | awk \'{print $3}\'',
+                                     shell=True, universal_newlines=True)
+        vote_list.append(vt[:-1])
     return vote_list
 
 
@@ -69,7 +69,7 @@ def leader_slots(identity_list):
         try:
             leader_slots_info = subprocess.check_output('solana block-production | grep ' + identity_list[i],
                                                         universal_newlines=True, shell=True)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             leader_slots_info = '0' * 81
 
         credits = int(validator_info[143:150])
@@ -77,7 +77,8 @@ def leader_slots(identity_list):
         commission = credits * 5e-6 - blocks_produced * 375e-5
         print(identity_list[i][:5])
         print(
-            'Total leader slots   Completed Leader Slots  Blocks Produced    Skipped Slots  Skipped Slot Percentage   Commission')
+            'Total leader slots   Completed Leader Slots  Blocks Produced    Skipped Slots  Skipped Slot Percentage   '
+            'Commission')
         if leader_slots_info[0] != '0':
             print(total[:-1].rjust(18) + ' ' * 12 + leader_slots_info[50:-1] + '◎{0:.3f}'.format(commission).rjust(
                 13) + '\n')
@@ -89,7 +90,8 @@ def validators(identity_list):
     ids = ''
     for i in identity_list:
         ids = ids + ' -e ' + i
-    subprocess.Popen('solana validators --sort=credits -r -n | sed -n 1,2p && solana validators --sort=credits -r -n | grep' + ids, shell=True).wait()
+    subprocess.Popen('solana validators --sort=credits -r -n | sed -n 1,2p && solana validators --sort=credits -r -n '
+                     '| grep' + ids, shell=True).wait()
 
 
 ##########################################################################################################
