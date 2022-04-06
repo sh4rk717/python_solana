@@ -21,6 +21,30 @@ def get_vote(identity_list):
     return vote_list
 
 
+def next_leaderslot(identity_key: str):
+    """
+    It is assumes that epoch lasts 2days 20 hours (4080 minutes)
+    :param identity_key: str
+    :return: Prints time to next Leader Slot in minutes
+    """
+    try:
+        ls_str = subprocess.check_output('solana leader-schedule | grep ' + identity_key + '| awk \'{print $1}\'',
+                                         universal_newlines=True, shell=True)
+    except subprocess.CalledProcessError:
+        return 'There are no leader slots in current epoch'
+    ls_list = ls_str.split('\n')
+    current_slot = subprocess.check_output('solana slot', universal_newlines=True, shell=True)
+    next_ls = ''
+    for num in range(len(ls_list)):
+        if ls_list[num] > current_slot:
+            next_ls = ls_list[num]
+            break
+    if next_ls == '':
+        return 'There are no more leader slots in current epoch'
+    slot_diff = int(next_ls) - int(current_slot)
+    return str(round(slot_diff / 432000 * 4080)) + ' min.'
+
+
 def end_of_epoch():
     full_info = subprocess.check_output('solana epoch-info', universal_newlines=True, shell=True)
     parent = re.findall(r"\((.*?)\)", full_info)  # list of texts in parentheses
@@ -47,7 +71,7 @@ def end_of_epoch():
 
     print('*' * 50 + '\nCurrent time:        ', str(now)[:-10])
     print('Approx. end of epoch:', str(eoe)[:-10])
-    print('*' * 50 + '\n')
+    print('*' * 50)
 
 
 def check_balance(identity_list, vote_list):
@@ -83,7 +107,12 @@ def leader_slots(identity_list):
             print(total[:-1].rjust(18) + ' ' * 12 + leader_slots_info[50:-1] + '◎{0:.3f}'.format(commission).rjust(
                 13) + '\n')
         else:
-            print(total[:-1].rjust(18) + ' ' * 84 + '◎{0:.3f}'.format(commission).rjust(13) + '\n')
+            print(total[:-1].rjust(18) + ' ' * 84 + '◎{0:.3f}'.format(commission).rjust(13))
+
+        if next_leaderslot(identity_list[i])[0] == 'T':
+            print(next_leaderslot(identity_list[i]))
+        else:
+            print('Approx. time to next leader slot:', next_leaderslot(identity_list[i]), '\n', '-'*113)
 
 
 def validators(identity_list):
@@ -95,10 +124,9 @@ def validators(identity_list):
 
 
 ##########################################################################################################
-identity = ['A1enabzLW77R2VVg67CLv3kNJ5FWVnAmC6pKcZwCmkXB', 'sh4rkGLyKwi8q1n8bwYkDiUC2n1cs6tbWSTGogd45d6']
-vote = get_vote(identity)
-
+identity = ['A1enabzLW77R2VVg67CLv3kNJ5FWVnAmC6pKcZwCmkXB', 'sh4rkGLyKwi8q1n8bwYkDiUC2n1cs6tbWSTGogd45d6', 'a1exwPymWZ9Z3ouEsYTrjLt3g7Fsf7DyfSF9BfmGser']
 menu()
+vote = get_vote(identity)
 
 while True:
     cmd = input('\nChoose option: ')
